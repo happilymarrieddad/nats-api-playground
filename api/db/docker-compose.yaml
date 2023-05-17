@@ -1,0 +1,34 @@
+version: "3"
+
+networks:
+  nats-api:
+
+services:
+  nats-api-db:
+    container_name: nats-api-db
+    image: postgres:15.2-alpine3.17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nats_api_db
+    restart: unless-stopped
+    networks:
+      - nats-api
+  nats-api-pgadmin:
+    container_name: nats-api-pgadmin
+    image: dpage/pgadmin4:6.15
+    depends_on:
+      - nats-api-db
+    ports:
+      - "5431:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@foo.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    restart: unless-stopped
+  nats:
+    container_name: nats
+    image: nats:2.9.0
+    ports:
+      - 4222:4222
