@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/happilymarrieddad/nats-api-playground/api/internal/auth"
 	"github.com/nats-io/nats.go"
 )
 
@@ -64,10 +65,12 @@ func (c *client) HandleAuthRequest(subj string, queueName string, fn func(m *nat
 
 			// do some auth
 			token := msg.Header.Get("token")
-			if len(token) == 0 {
-				// TODO: return error
-				fmt.Println("token not found")
-				return
+
+			if _, err := auth.IsTokenValid(token); err != nil {
+				// Should be using msg.Respond instead??
+				msg.Data = []byte(fmt.Sprintf(`{"error": %s}`, err.Error()))
+				fn(msg)
+				continue
 			}
 
 			fn(msg)
