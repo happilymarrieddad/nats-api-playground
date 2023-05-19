@@ -21,15 +21,15 @@ var _ = Describe("nats client", func() {
 	BeforeEach(func() {
 		var err error
 
-		client1, err = NewClient(nats.DefaultURL)
+		client1, err = NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
 		Expect(client1).NotTo(BeNil())
 
-		client2, err = NewClient(nats.DefaultURL)
+		client2, err = NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
 		Expect(client2).NotTo(BeNil())
 
-		client3, err = NewClient(nats.DefaultURL)
+		client3, err = NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
 		Expect(client3).NotTo(BeNil())
 	})

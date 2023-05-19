@@ -3,6 +3,7 @@ version: "3"
 networks:
   nats-api:
 
+
 services:
   nats-api-db:
     container_name: nats-api-db
@@ -12,7 +13,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nats_api_db
+      POSTGRES_DB: nats_api_test
     restart: unless-stopped
     networks:
       - nats-api
@@ -29,6 +30,10 @@ services:
     restart: unless-stopped
   nats:
     container_name: nats
-    image: nats:2.9.0
+    image: bitnami/nats:latest
     ports:
       - 4222:4222
+    environment:
+      NATS_ENABLE_AUTH: "yes"
+      NATS_USERNAME: usr
+      NATS_PASSWORD: pass

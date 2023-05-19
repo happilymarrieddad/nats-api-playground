@@ -13,7 +13,7 @@ type GlobalRepo interface {
 	// Categories() Categories
 	// Customers() Customers
 	// Products() Products
-	// Users() Users
+	Users() Users
 }
 
 func NewGlobalRepo(db *xorm.Engine) (GlobalRepo, error) {
@@ -61,6 +61,6 @@ func (g *globalRepo) getFactory(key string, fn func() interface{}) interface{} {
 // 	return g.getFactory("Products", func() interface{} { return NewProducts(g.db) }).(Products)
 // }
 
-// func (g *globalRepo) Users() Users {
-// 	return g.getFactory("Users", func() interface{} { return NewUsers(g.db) }).(Users)
-// }
+func (g *globalRepo) Users() Users {
+	return g.getFactory("Users", func() interface{} { return NewUsers(g.db) }).(Users)
+}

@@ -15,9 +15,9 @@ type Client interface {
 	Request(subj string, data []byte) ([]byte, error)
 }
 
-func NewClient(natsUrl string) (Client, error) {
+func NewClient(natsUrl, usr, pass string) (Client, error) {
 	// Connect to a server
-	nc, err := nats.Connect(natsUrl)
+	nc, err := nats.Connect(natsUrl, nats.UserInfo(usr, pass))
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +67,8 @@ func (c *client) HandleAuthRequest(subj string, queueName string, fn func(m *nat
 			token := msg.Header.Get("token")
 
 			if _, err := auth.IsTokenValid(token); err != nil {
-				// Should be using msg.Respond instead??
-				msg.Data = []byte(fmt.Sprintf(`{"error": %s}`, err.Error()))
-				fn(msg)
+				fmt.Printf("auth failure err: %s\n", err.Error())
+				c.Respond(msg.Reply, []byte(`{"error": "unauthorized"}`))
 				continue
 			}
 
