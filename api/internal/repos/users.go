@@ -10,6 +10,7 @@ import (
 type Users interface {
 	Find(limit, offset int) ([]*types.User, int64, error)
 	Get(id int64) (*types.User, bool, error)
+	GetByEmail(email string) (*types.User, bool, error)
 	Create(usr *types.User) error
 	CreateTx(sesh *xorm.Session, usr *types.User) error
 	Update(usr types.UserUpdate) (*types.User, error)
@@ -41,6 +42,19 @@ func (r *users) Get(id int64) (*types.User, bool, error) {
 	usr := &types.User{}
 
 	exists, err := r.db.ID(id).Get(usr)
+	if err != nil {
+		return nil, false, err
+	} else if !exists {
+		usr = nil
+	}
+
+	return usr, exists, nil
+}
+
+func (r *users) GetByEmail(email string) (*types.User, bool, error) {
+	usr := &types.User{}
+
+	exists, err := r.db.Where("email = ?", email).Get(usr)
 	if err != nil {
 		return nil, false, err
 	} else if !exists {

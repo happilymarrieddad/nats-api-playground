@@ -23,9 +23,18 @@ func Login(gr repos.GlobalRepo, nc nats.Client) {
 			return
 		}
 
+		usr, exists, err := gr.Users().GetByEmail(login.Email)
+		if err != nil {
+			nc.Respond(m.Reply, middleware.RespondError(err))
+			return
+		} else if !exists || !usr.PasswordMatches(login.Password) {
+			nc.Respond(m.Reply, middleware.RespondErrMsg("unauthorized"))
+			return
+		}
+
 		// For now just return a token
 		token, err := auth.CreateToken(map[string]interface{}{
-			"email": login.Email,
+			"user": usr,
 		})
 		if err != nil {
 			nc.Respond(m.Reply, middleware.RespondError(err))

@@ -1,6 +1,10 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type User struct {
 	ID        int64      `json:"id" xorm:"'id' pk autoincr"`
@@ -14,6 +18,21 @@ type User struct {
 
 func (*User) TableName() string {
 	return `users`
+}
+
+func (u *User) SetPassword(psw string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(psw), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hashedPassword)
+
+	return nil
+}
+
+func (u *User) PasswordMatches(psw string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(psw)) == nil
 }
 
 type UserUpdate struct {
