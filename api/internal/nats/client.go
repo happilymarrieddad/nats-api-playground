@@ -1,6 +1,8 @@
 package nats
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -8,11 +10,12 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+//go:generate mockgen -destination=./mocks/Client.go -package=mock_nats github.com/happilymarrieddad/nats-api-playground/api/internal/nats Client
 type Client interface {
 	HandleRequest(subject string, queueName string, fn func(m *nats.Msg)) (*nats.Subscription, error)
 	HandleAuthRequest(subject string, queueName string, fn func(m *nats.Msg)) (*nats.Subscription, error)
 	Respond(subj string, data []byte) error
-	Request(subj string, data []byte) ([]byte, error)
+	Request(subj string, data []byte, headers map[string]string) ([]byte, error)
 }
 
 func NewClient(natsUrl, usr, pass string) (Client, error) {
@@ -83,10 +86,30 @@ func (c *client) Respond(subj string, data []byte) error {
 	return c.nc.Publish(subj, data)
 }
 
-func (c *client) Request(subj string, data []byte) ([]byte, error) {
-	msg, err := c.nc.Request(subj, data, time.Hour*24)
+func (c *client) Request(subj string, data []byte, headers map[string]string) ([]byte, error) {
+	msg := nats.NewMsg(subj)
+	msg.Data = data
+	if headers != nil {
+		for key, val := range headers {
+			msg.Header.Add(key, val)
+		}
+	}
+
+	msg, err := c.nc.RequestMsg(msg, time.Hour*24)
 	if err != nil {
 		return nil, err
+	}
+
+	type errStruct struct {
+		Error string `json:"error"`
+	}
+
+	es := new(errStruct)
+	if err = json.Unmarshal(msg.Data, es); err != nil {
+		return nil, err
+	}
+	if len(es.Error) > 0 {
+		return nil, errors.New(es.Error)
 	}
 
 	return msg.Data, nil

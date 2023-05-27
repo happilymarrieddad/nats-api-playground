@@ -10,4 +10,5 @@ func SetupRoutes(gr repos.GlobalRepo, nc nats.Client) {
 	// Users
 	users.Index(gr, nc)
 	users.Create(gr, nc)
+	users.Update(gr, nc)
 }

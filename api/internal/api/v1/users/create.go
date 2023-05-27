@@ -19,8 +19,8 @@ type NewUser struct {
 	PasswordConfirm string `validate:"required" json:"password_confirm"`
 }
 
-func Create(gr repos.GlobalRepo, nc nats.Client) {
-	nc.HandleRequest("users.create", "api", func(m *natspkg.Msg) {
+func Create(gr repos.GlobalRepo, nc nats.Client) error {
+	_, err := nc.HandleRequest("users.create", "api", func(m *natspkg.Msg) {
 		req := NewUser{}
 
 		if err := json.Unmarshal(m.Data, &req); err != nil {
@@ -52,4 +52,6 @@ func Create(gr repos.GlobalRepo, nc nats.Client) {
 
 		nc.Respond(m.Reply, middleware.Respond(usr))
 	})
+
+	return err
 }

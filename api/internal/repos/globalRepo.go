@@ -8,11 +8,8 @@ import (
 
 var singular GlobalRepo
 
-//go:generate mockgen -destination=./mocks/GlobalRepo.go -package=mock_repos plant-ecommerce-api/internal/repos GlobalRepo
+//go:generate mockgen -destination=./mocks/GlobalRepo.go -package=mock_repos github.com/happilymarrieddad/nats-api-playground/api/internal/repos GlobalRepo
 type GlobalRepo interface {
-	// Categories() Categories
-	// Customers() Customers
-	// Products() Products
 	Users() Users
 }
 
@@ -34,7 +31,7 @@ type globalRepo struct {
 	fac   map[string]interface{}
 }
 
-func (g *globalRepo) getFactory(key string, fn func() interface{}) interface{} {
+func (g *globalRepo) getFactory(key string, fn func(db *xorm.Engine) interface{}) interface{} {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
@@ -43,24 +40,12 @@ func (g *globalRepo) getFactory(key string, fn func() interface{}) interface{} {
 		return val
 	}
 
-	newFac := fn()
+	newFac := fn(g.db)
 	g.fac[key] = newFac
 
 	return newFac
 }
 
-// func (g *globalRepo) Categories() Categories {
-// 	return g.getFactory("Categories", func() interface{} { return NewCategories(g.db) }).(Categories)
-// }
-
-// func (g *globalRepo) Customers() Customers {
-// 	return g.getFactory("Customers", func() interface{} { return NewCustomers(g.db) }).(Customers)
-// }
-
-// func (g *globalRepo) Products() Products {
-// 	return g.getFactory("Products", func() interface{} { return NewProducts(g.db) }).(Products)
-// }
-
 func (g *globalRepo) Users() Users {
-	return g.getFactory("Users", func() interface{} { return NewUsers(g.db) }).(Users)
+	return g.getFactory("Users", func(db *xorm.Engine) interface{} { return NewUsers(db) }).(Users)
 }

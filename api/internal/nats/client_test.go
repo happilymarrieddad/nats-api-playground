@@ -55,7 +55,7 @@ var _ = Describe("nats client", func() {
 
 			time.Sleep(time.Second) // simulate normal delay
 
-			res, err := client3.Request(ch, nil)
+			res, err := client3.Request(ch, nil, nil)
 			Expect(err).To(BeNil())
 			Expect(res).To(Equal(data))
 

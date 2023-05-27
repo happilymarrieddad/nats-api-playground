@@ -7,6 +7,7 @@ import (
 	"xorm.io/xorm"
 )
 
+//go:generate mockgen -destination=./mocks/Users.go -package=mock_repos github.com/happilymarrieddad/nats-api-playground/api/internal/repos Users
 type Users interface {
 	Find(limit, offset int) ([]*types.User, int64, error)
 	Get(id int64) (*types.User, bool, error)
