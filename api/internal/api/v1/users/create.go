@@ -9,6 +9,7 @@ import (
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/repos"
 	"github.com/happilymarrieddad/nats-api-playground/api/types"
 	natspkg "github.com/nats-io/nats.go"
+	"github.com/onsi/ginkgo/v2"
 )
 
 type NewUser struct {
@@ -20,23 +21,20 @@ type NewUser struct {
 }
 
 func Create(gr repos.GlobalRepo, nc nats.Client) error {
-	_, err := nc.HandleRequest("users.create", "api", func(m *natspkg.Msg) {
+	_, err := nc.HandleRequest("users.create", "api", func(m *natspkg.Msg) ([]byte, string, error) {
+		defer ginkgo.GinkgoRecover()
 		req := NewUser{}
 
 		if err := json.Unmarshal(m.Data, &req); err != nil {
-			fmt.Printf("unable to marshal response err: %s\n", err.Error())
-			nc.Respond(m.Reply, middleware.RespondErrMsg("unable to read data"))
-			return
+			return nil, "unable to read data", err
 		}
 
 		if err := types.Validate(req); err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unable to read data", err
 		}
 
 		if len(req.Password) == 0 || req.Password != req.PasswordConfirm {
-			nc.Respond(m.Reply, middleware.RespondErrMsg("password must match"))
-			return
+			return nil, "password must match", fmt.Errorf("password must match")
 		}
 
 		usr := &types.User{
@@ -46,11 +44,10 @@ func Create(gr repos.GlobalRepo, nc nats.Client) error {
 		}
 		usr.SetPassword(req.Password)
 		if err := gr.Users().Create(usr); err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unable to create user", err
 		}
 
-		nc.Respond(m.Reply, middleware.Respond(usr))
+		return middleware.Respond(usr), "", nil
 	})
 
 	return err

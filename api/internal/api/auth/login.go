@@ -11,7 +11,7 @@ import (
 )
 
 func Login(gr repos.GlobalRepo, nc nats.Client) {
-	nc.HandleRequest("login", "api", func(m *natspkg.Msg) {
+	nc.HandleRequest("login", "api", func(m *natspkg.Msg) ([]byte, string, error) {
 		type Login struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -19,17 +19,14 @@ func Login(gr repos.GlobalRepo, nc nats.Client) {
 
 		var login Login
 		if err := json.Unmarshal(m.Data, &login); err != nil {
-			nc.Respond(m.Reply, middleware.RespondErrMsg("unable to read data"))
-			return
+			return nil, "unable to read data", err
 		}
 
 		usr, exists, err := gr.Users().GetByEmail(login.Email)
 		if err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unable to get user", err
 		} else if !exists || !usr.PasswordMatches(login.Password) {
-			nc.Respond(m.Reply, middleware.RespondErrMsg("unauthorized"))
-			return
+			return nil, "unauthorized", err
 		}
 
 		// For now just return a token
@@ -37,14 +34,13 @@ func Login(gr repos.GlobalRepo, nc nats.Client) {
 			"user": usr,
 		})
 		if err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unauthorized", err
 		}
 
-		nc.Respond(m.Reply, middleware.Respond(struct {
+		return middleware.Respond(struct {
 			Token string `json:"token"`
 		}{
 			Token: token,
-		}))
+		}), "", nil
 	})
 }

@@ -58,5 +58,7 @@ func main() {
 		panic(err)
 	}
 
+	nc.SetDebug(true)
+
 	api.Start(gin.Default(), 4000, gr, nc)
 }

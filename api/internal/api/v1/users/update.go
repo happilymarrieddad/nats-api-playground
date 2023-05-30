@@ -9,6 +9,7 @@ import (
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/repos"
 	"github.com/happilymarrieddad/nats-api-playground/api/types"
 	natspkg "github.com/nats-io/nats.go"
+	"github.com/onsi/ginkgo/v2"
 )
 
 type UpdateUser struct {
@@ -19,18 +20,16 @@ type UpdateUser struct {
 }
 
 func Update(gr repos.GlobalRepo, nc nats.Client) error {
-	_, err := nc.HandleAuthRequest("users.update", "api", func(m *natspkg.Msg) {
+	_, err := nc.HandleAuthRequest("users.update", "api", func(m *natspkg.Msg) ([]byte, string, error) {
+		defer ginkgo.GinkgoRecover()
 		req := UpdateUser{}
 
 		if err := json.Unmarshal(m.Data, &req); err != nil {
-			fmt.Printf("unable to marshal response err: %s\n", err.Error())
-			nc.Respond(m.Reply, middleware.RespondErrMsg("unable to read data"))
-			return
+			return nil, fmt.Sprintf("unable to marshal response err: %s\n", err.Error()), err
 		}
 
 		if err := types.Validate(req); err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, fmt.Sprintf("unable to read data. first_name and/or last_name are required"), err
 		}
 
 		// TODO: add ability to change password
@@ -47,11 +46,10 @@ func Update(gr repos.GlobalRepo, nc nats.Client) error {
 			LastName:  req.LastName,
 		})
 		if err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unable to update user", err
 		}
 
-		nc.Respond(m.Reply, middleware.Respond(updatedUser))
+		return middleware.Respond(updatedUser), "", nil
 	})
 
 	return err

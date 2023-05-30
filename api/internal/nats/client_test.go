@@ -41,15 +41,15 @@ var _ = Describe("nats client", func() {
 
 			var handles int
 
-			_, err := client1.HandleRequest(ch, "api", func(m *nats.Msg) {
+			_, err := client1.HandleRequest(ch, "api", func(m *nats.Msg) ([]byte, string, error) {
 				handles++
-				client1.Respond(m.Reply, data)
+				return data, "", nil
 			})
 			Expect(err).To(BeNil())
 
-			_, err = client2.HandleRequest(ch, "api", func(m *nats.Msg) {
+			_, err = client2.HandleRequest(ch, "api", func(m *nats.Msg) ([]byte, string, error) {
 				handles++
-				client2.Respond(m.Reply, data)
+				return data, "", nil
 			})
 			Expect(err).To(BeNil())
 

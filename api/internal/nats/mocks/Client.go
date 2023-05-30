@@ -35,7 +35,7 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // HandleAuthRequest mocks base method.
-func (m *MockClient) HandleAuthRequest(arg0, arg1 string, arg2 func(*nats.Msg)) (*nats.Subscription, error) {
+func (m *MockClient) HandleAuthRequest(arg0, arg1 string, arg2 func(*nats.Msg) ([]byte, string, error)) (*nats.Subscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HandleAuthRequest", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*nats.Subscription)
@@ -50,7 +50,7 @@ func (mr *MockClientMockRecorder) HandleAuthRequest(arg0, arg1, arg2 interface{}
 }
 
 // HandleRequest mocks base method.
-func (m *MockClient) HandleRequest(arg0, arg1 string, arg2 func(*nats.Msg)) (*nats.Subscription, error) {
+func (m *MockClient) HandleRequest(arg0, arg1 string, arg2 func(*nats.Msg) ([]byte, string, error)) (*nats.Subscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HandleRequest", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*nats.Subscription)
@@ -65,18 +65,18 @@ func (mr *MockClientMockRecorder) HandleRequest(arg0, arg1, arg2 interface{}) *g
 }
 
 // Request mocks base method.
-func (m *MockClient) Request(arg0 string, arg1 []byte) ([]byte, error) {
+func (m *MockClient) Request(arg0 string, arg1 []byte, arg2 map[string]string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Request", arg0, arg1)
+	ret := m.ctrl.Call(m, "Request", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Request indicates an expected call of Request.
-func (mr *MockClientMockRecorder) Request(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) Request(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockClient)(nil).Request), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockClient)(nil).Request), arg0, arg1, arg2)
 }
 
 // Respond mocks base method.
@@ -91,4 +91,16 @@ func (m *MockClient) Respond(arg0 string, arg1 []byte) error {
 func (mr *MockClientMockRecorder) Respond(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Respond", reflect.TypeOf((*MockClient)(nil).Respond), arg0, arg1)
+}
+
+// SetDebug mocks base method.
+func (m *MockClient) SetDebug(arg0 bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetDebug", arg0)
+}
+
+// SetDebug indicates an expected call of SetDebug.
+func (mr *MockClientMockRecorder) SetDebug(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDebug", reflect.TypeOf((*MockClient)(nil).SetDebug), arg0)
 }

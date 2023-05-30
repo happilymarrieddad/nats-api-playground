@@ -35,6 +35,7 @@ var _ = Describe("NATS: Users", func() {
 		var err error
 		natsServerClient, err = natspkg.NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
+		natsServerClient.SetDebug(true)
 
 		natsReqClient, err = natspkg.NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
@@ -103,5 +104,13 @@ var _ = Describe("NATS: Users", func() {
 			Expect(err).To(BeNil())
 			Expect(res).To(Equal(bts))
 		})
+	})
+
+	Context("users.create", func() {
+
+	})
+
+	Context("users.update", func() {
+
 	})
 })

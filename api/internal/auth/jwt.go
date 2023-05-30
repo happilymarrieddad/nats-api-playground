@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/happilymarrieddad/nats-api-playground/api/types"
 )
 
 const (
@@ -59,6 +60,33 @@ func CreateToken(keys map[string]interface{}) (string, error) {
 	token.Claims = claims
 
 	return token.SignedString(signKey)
+}
+
+func GetUserFromToken(val string) (usr *types.User, err error) {
+	token, err := jwt.Parse(val, func(token *jwt.Token) (interface{}, error) {
+		return verifyKey, nil
+	})
+
+	switch err.(type) {
+	case nil:
+		if !token.Valid {
+			return nil, errors.New("token is invalid")
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return nil, errors.New("token is invalid")
+		}
+
+		user, exists := claims["user"]
+		if exists {
+			return nil, errors.New("usr does not exist on token")
+		}
+
+		return user.(*types.User), nil
+	default:
+		return nil, errors.New("invalid token")
+	}
 }
 
 func IsTokenValid(val string) (int64, error) {

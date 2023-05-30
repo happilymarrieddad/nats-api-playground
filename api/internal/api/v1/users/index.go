@@ -2,7 +2,6 @@ package users
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/api/middleware"
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/nats"
@@ -14,32 +13,28 @@ import (
 
 type IndexReq struct {
 	Limit  int `validate:"required" json:"limit"`
-	Offset int `validate:"required" json:"offset"`
+	Offset int `json:"offset"`
 }
 
 func Index(gr repos.GlobalRepo, nc nats.Client) error {
-	_, err := nc.HandleAuthRequest("users.index", "api", func(m *natspkg.Msg) {
+	_, err := nc.HandleAuthRequest("users.index", "api", func(m *natspkg.Msg) ([]byte, string, error) {
 		defer ginkgo.GinkgoRecover()
 		req := IndexReq{}
 
 		if err := json.Unmarshal(m.Data, &req); err != nil {
-			fmt.Printf("unable to marshal response err: %s\n", err.Error())
-			nc.Respond(m.Reply, middleware.RespondErrMsg("unable to read data ['limit','offset'] required in msg request"))
-			return
+			return nil, "unable to read data ['limit','offset'] required in msg request", err
 		}
 
 		if err := types.Validate(req); err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unable to read data ['limit','offset'] required in msg request", err
 		}
 
 		usrs, count, err := gr.Users().Find(req.Limit, req.Offset)
 		if err != nil {
-			nc.Respond(m.Reply, middleware.RespondError(err))
-			return
+			return nil, "unable to get users", err
 		}
 
-		nc.Respond(m.Reply, middleware.RespondFind(usrs, count))
+		return middleware.RespondFind(usrs, count), "", nil
 	})
 
 	return err
