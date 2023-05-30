@@ -2,9 +2,11 @@ package users_test
 
 import (
 	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/happilymarrieddad/nats-api-playground/api/internal/api/v1/users"
+	v1 "github.com/happilymarrieddad/nats-api-playground/api/internal/api/v1"
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/auth"
 	natspkg "github.com/happilymarrieddad/nats-api-playground/api/internal/nats"
 	repomocks "github.com/happilymarrieddad/nats-api-playground/api/internal/repos/mocks"
@@ -45,7 +47,9 @@ var _ = Describe("NATS: Users", func() {
 
 		globalRepo.EXPECT().Users().Return(usersRepo).AnyTimes()
 
-		Expect(users.Index(globalRepo, natsServerClient)).To(Succeed())
+		v1.SetupRoutes(globalRepo, natsServerClient)
+
+		time.Sleep(time.Microsecond * 50)
 	})
 
 	AfterEach(func() {
@@ -59,7 +63,9 @@ var _ = Describe("NATS: Users", func() {
 		BeforeEach(func() {
 			var err error
 			token, err = auth.CreateToken(map[string]interface{}{
-				"userId": 1,
+				"user": &types.User{
+					ID: 1,
+				},
 			})
 			Expect(err).To(BeNil())
 
@@ -102,6 +108,52 @@ var _ = Describe("NATS: Users", func() {
 				Count: len(ret),
 			})
 			Expect(err).To(BeNil())
+			Expect(res).To(Equal(bts))
+		})
+	})
+
+	Context("users.get.<id>", func() {
+		var token string
+		var usr *types.User
+
+		BeforeEach(func() {
+			usr = &types.User{
+				ID:        8273,
+				FirstName: "first",
+				LastName:  "last",
+				Email:     "somemail@test.com",
+			}
+
+			var err error
+			token, err = auth.CreateToken(map[string]interface{}{
+				"user": &types.User{
+					ID:        usr.ID,
+					FirstName: usr.FirstName,
+					LastName:  usr.LastName,
+					Email:     usr.Email,
+				},
+			})
+			Expect(err).To(BeNil())
+		})
+
+		It("should return an error from the auth'd handler", func() {
+			res, err := natsReqClient.Request(fmt.Sprintf("users.get.%d", usr.ID), nil, nil)
+			Expect(err).NotTo(BeNil())
+			Expect(err.Error()).To(Equal("unauthorized"))
+			Expect(res).To(BeNil())
+		})
+
+		It("should successfully get a user", func() {
+			usersRepo.EXPECT().Get(usr.ID).Return(usr, true, nil).Times(1)
+
+			res, err := natsReqClient.Request(fmt.Sprintf("users.get.%d", usr.ID), nil, map[string]string{
+				"token": token,
+			})
+			Expect(err).To(BeNil())
+
+			bts, err := json.Marshal(usr)
+			Expect(err).To(BeNil())
+
 			Expect(res).To(Equal(bts))
 		})
 	})

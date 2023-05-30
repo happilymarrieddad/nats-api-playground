@@ -27,11 +27,13 @@ func Get(gr repos.GlobalRepo, nc nats.Client) error {
 			return nil, "id required and it must be an integer", err
 		}
 
-		tokenUser, err := auth.GetUserFromToken(m.Header.Get("token"))
+		token := m.Header.Get("token")
+
+		tokenUser, err := auth.GetUserFromToken(token)
 		if err != nil {
 			return nil, "unauthorized", err
 		} else if tokenUser.ID != id {
-			return nil, "unauthorized", fmt.Errorf("unauthorized")
+			return nil, "unauthorized", fmt.Errorf("unauthorized id: %d neq %d", id, tokenUser.ID)
 		}
 
 		usr, exists, err := gr.Users().Get(id)

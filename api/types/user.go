@@ -6,6 +6,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func GetUserFromMap(mp map[string]interface{}) *User {
+	u := new(User)
+
+	rawID, _ := mp["id"].(float64)
+	u.ID = int64(rawID)
+	u.FirstName, _ = mp["first_name"].(string)
+	u.LastName, _ = mp["last_name"].(string)
+	u.Email, _ = mp["email"].(string)
+
+	return u
+}
+
 type User struct {
 	ID        int64      `json:"id" xorm:"'id' pk autoincr"`
 	FirstName string     `validate:"required" json:"first_name" xorm:"first_name"`

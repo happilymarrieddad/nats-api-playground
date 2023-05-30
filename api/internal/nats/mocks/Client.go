@@ -64,6 +64,20 @@ func (mr *MockClientMockRecorder) HandleRequest(arg0, arg1, arg2 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleRequest", reflect.TypeOf((*MockClient)(nil).HandleRequest), arg0, arg1, arg2)
 }
 
+// Publish mocks base method.
+func (m *MockClient) Publish(arg0 string, arg1 []byte, arg2 map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Publish", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Publish indicates an expected call of Publish.
+func (mr *MockClientMockRecorder) Publish(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockClient)(nil).Publish), arg0, arg1, arg2)
+}
+
 // Request mocks base method.
 func (m *MockClient) Request(arg0 string, arg1 []byte, arg2 map[string]string) ([]byte, error) {
 	m.ctrl.T.Helper()
