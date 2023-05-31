@@ -94,9 +94,9 @@ func (mr *MockUsersMockRecorder) DeleteTx(arg0, arg1, arg2 interface{}) *gomock.
 }
 
 // Find mocks base method.
-func (m *MockUsers) Find(arg0 context.Context, arg1, arg2 int) ([]*types.User, int64, error) {
+func (m *MockUsers) Find(arg0 context.Context, arg1 *repos.UserFindOpts) ([]*types.User, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Find", arg0, arg1)
 	ret0, _ := ret[0].([]*types.User)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -104,25 +104,9 @@ func (m *MockUsers) Find(arg0 context.Context, arg1, arg2 int) ([]*types.User, i
 }
 
 // Find indicates an expected call of Find.
-func (mr *MockUsersMockRecorder) Find(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockUsersMockRecorder) Find(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUsers)(nil).Find), arg0, arg1, arg2)
-}
-
-// FindComplex mocks base method.
-func (m *MockUsers) FindComplex(arg0 context.Context, arg1 *repos.UserFindOpts) ([]*types.User, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindComplex", arg0, arg1)
-	ret0, _ := ret[0].([]*types.User)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// FindComplex indicates an expected call of FindComplex.
-func (mr *MockUsersMockRecorder) FindComplex(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindComplex", reflect.TypeOf((*MockUsers)(nil).FindComplex), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUsers)(nil).Find), arg0, arg1)
 }
 
 // Get mocks base method.

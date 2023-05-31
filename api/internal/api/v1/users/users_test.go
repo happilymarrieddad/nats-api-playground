@@ -8,6 +8,7 @@ import (
 	v1 "github.com/happilymarrieddad/nats-api-playground/api/internal/api/v1"
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/auth"
 	natspkg "github.com/happilymarrieddad/nats-api-playground/api/internal/nats"
+	"github.com/happilymarrieddad/nats-api-playground/api/internal/repos"
 	repomocks "github.com/happilymarrieddad/nats-api-playground/api/internal/repos/mocks"
 	"github.com/happilymarrieddad/nats-api-playground/api/types"
 	"github.com/nats-io/nats.go"
@@ -90,7 +91,7 @@ var _ = Describe("NATS: Users", func() {
 		})
 
 		It("should successfully return a list of users", func() {
-			usersRepo.EXPECT().Find(gomock.Any(), 10, 0).Return(ret, int64(len(ret)), nil).Times(1)
+			usersRepo.EXPECT().Find(gomock.Any(), &repos.UserFindOpts{Limit: 2}).Return(ret, int64(len(ret)), nil).Times(1)
 
 			res, err := natsReqClient.Request("users.index", []byte(`{"limit": 10, "offset": 0}`), map[string]string{
 				"token": token,

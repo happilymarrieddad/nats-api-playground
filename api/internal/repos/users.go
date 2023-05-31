@@ -20,8 +20,7 @@ type UserFindOpts struct {
 
 //go:generate mockgen -destination=./mocks/Users.go -package=mock_repos github.com/happilymarrieddad/nats-api-playground/api/internal/repos Users
 type Users interface {
-	Find(ctx context.Context, limit, offset int) ([]*types.User, int64, error)
-	FindComplex(ctx context.Context, opts *UserFindOpts) ([]*types.User, int64, error)
+	Find(ctx context.Context, opts *UserFindOpts) ([]*types.User, int64, error)
 	Get(ctx context.Context, id int64) (*types.User, bool, error)
 	GetByEmail(ctx context.Context, email string) (*types.User, bool, error)
 	Create(ctx context.Context, usr *types.User) error
@@ -40,18 +39,7 @@ type users struct {
 	db *xorm.Engine
 }
 
-func (r *users) Find(ctx context.Context, limit, offset int) ([]*types.User, int64, error) {
-	usrs := []*types.User{}
-
-	count, err := r.db.Context(ctx).Limit(limit, offset).FindAndCount(&usrs)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return usrs, count, nil
-}
-
-func (r *users) FindComplex(ctx context.Context, opts *UserFindOpts) (usrs []*types.User, count int64, err error) {
+func (r *users) Find(ctx context.Context, opts *UserFindOpts) (usrs []*types.User, count int64, err error) {
 	if opts == nil {
 		opts = &UserFindOpts{Limit: 10}
 	}

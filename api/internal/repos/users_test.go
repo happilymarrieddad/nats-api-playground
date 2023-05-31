@@ -3,6 +3,7 @@ package repos_test
 import (
 	"context"
 
+	"github.com/happilymarrieddad/nats-api-playground/api/internal/repos"
 	. "github.com/happilymarrieddad/nats-api-playground/api/internal/repos"
 	"github.com/happilymarrieddad/nats-api-playground/api/types"
 
@@ -61,7 +62,7 @@ var _ = Describe("UsersRepo", func() {
 		})
 
 		It("should successfully get all users", func() {
-			usrs, count, err := repo.Find(ctx, 2, 0)
+			usrs, count, err := repo.Find(ctx, &repos.UserFindOpts{Limit: 2})
 			Expect(err).To(BeNil())
 			Expect(count).To(BeNumerically("==", 3))
 			Expect(usrs).To(HaveLen(2))
@@ -154,14 +155,14 @@ var _ = Describe("UsersRepo", func() {
 		})
 
 		It("should successfully delete the user", func() {
-			usrs, count, err := repo.Find(ctx, 10, 0)
+			usrs, count, err := repo.Find(ctx, &repos.UserFindOpts{Limit: 10})
 			Expect(err).To(BeNil())
 			Expect(count).To(BeNumerically("==", 2))
 			Expect(usrs).To(HaveLen(2))
 
 			Expect(repo.Delete(ctx, usr.ID)).To(Succeed())
 
-			usrs, count, err = repo.Find(ctx, 10, 0)
+			usrs, count, err = repo.Find(ctx, &repos.UserFindOpts{Limit: 10})
 			Expect(err).To(BeNil())
 			Expect(count).To(BeNumerically("==", 1))
 			Expect(usrs).To(HaveLen(1))

@@ -12,26 +12,21 @@ import (
 	"github.com/onsi/ginkgo/v2"
 )
 
-type IndexReq struct {
-	Limit  int `validate:"required" json:"limit"`
-	Offset int `json:"offset"`
-}
-
 func Index(gr repos.GlobalRepo, nc nats.Client) error {
 	_, err := nc.HandleAuthRequest("users.index", "api", func(m *natspkg.Msg) ([]byte, string, error) {
 		ctx := context.Background()
 		defer ginkgo.GinkgoRecover()
-		req := IndexReq{}
+		req := repos.UserFindOpts{}
 
 		if err := json.Unmarshal(m.Data, &req); err != nil {
-			return nil, "unable to read data ['limit','offset'] required in msg request", err
+			return nil, "unable to read data in msg request", err
 		}
 
 		if err := types.Validate(req); err != nil {
-			return nil, "unable to read data ['limit','offset'] required in msg request", err
+			return nil, "unable to read data in msg request", err
 		}
 
-		usrs, count, err := gr.Users().Find(ctx, req.Limit, req.Offset)
+		usrs, count, err := gr.Users().Find(ctx, &req)
 		if err != nil {
 			return nil, "unable to get users", err
 		}
