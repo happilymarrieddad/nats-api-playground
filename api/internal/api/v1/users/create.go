@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -22,6 +23,7 @@ type NewUser struct {
 
 func Create(gr repos.GlobalRepo, nc nats.Client) error {
 	_, err := nc.HandleRequest("users.create", "api", func(m *natspkg.Msg) ([]byte, string, error) {
+		ctx := context.Background()
 		defer ginkgo.GinkgoRecover()
 		req := NewUser{}
 
@@ -43,7 +45,7 @@ func Create(gr repos.GlobalRepo, nc nats.Client) error {
 			Email:     req.Email,
 		}
 		usr.SetPassword(req.Password)
-		if err := gr.Users().Create(usr); err != nil {
+		if err := gr.Users().Create(ctx, usr); err != nil {
 			return nil, "unable to create user", err
 		}
 

@@ -1,6 +1,7 @@
 package authroutes
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/happilymarrieddad/nats-api-playground/api/internal/api/middleware"
@@ -12,6 +13,7 @@ import (
 
 func Login(gr repos.GlobalRepo, nc nats.Client) {
 	nc.HandleRequest("login", "api", func(m *natspkg.Msg) ([]byte, string, error) {
+		ctx := context.Background()
 		type Login struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -22,7 +24,7 @@ func Login(gr repos.GlobalRepo, nc nats.Client) {
 			return nil, "unable to read data", err
 		}
 
-		usr, exists, err := gr.Users().GetByEmail(login.Email)
+		usr, exists, err := gr.Users().GetByEmail(ctx, login.Email)
 		if err != nil {
 			return nil, "unable to get user", err
 		} else if !exists || !usr.PasswordMatches(login.Password) {

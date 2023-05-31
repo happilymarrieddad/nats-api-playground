@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -25,6 +26,7 @@ type UpdateUser struct {
 
 func Update(gr repos.GlobalRepo, nc nats.Client) error {
 	_, err := nc.HandleAuthRequest("users.update.*", "api", func(m *natspkg.Msg) ([]byte, string, error) {
+		ctx := context.Background()
 		defer ginkgo.GinkgoRecover()
 
 		strs := strings.Split(m.Subject, ".")
@@ -69,7 +71,7 @@ func Update(gr repos.GlobalRepo, nc nats.Client) error {
 			// TODO: update the user with password
 		}
 
-		updatedUser, err := gr.Users().Update(userToUpdate)
+		updatedUser, err := gr.Users().Update(ctx, userToUpdate)
 		if err != nil {
 			return nil, "unable to update user", err
 		}

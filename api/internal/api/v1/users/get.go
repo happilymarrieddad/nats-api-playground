@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -15,6 +16,7 @@ import (
 
 func Get(gr repos.GlobalRepo, nc nats.Client) error {
 	_, err := nc.HandleAuthRequest("users.get.*", "api", func(m *natspkg.Msg) ([]byte, string, error) {
+		ctx := context.Background()
 		defer ginkgo.GinkgoRecover()
 
 		strs := strings.Split(m.Subject, ".")
@@ -36,7 +38,7 @@ func Get(gr repos.GlobalRepo, nc nats.Client) error {
 			return nil, "unauthorized", fmt.Errorf("unauthorized id: %d neq %d", id, tokenUser.ID)
 		}
 
-		usr, exists, err := gr.Users().Get(id)
+		usr, exists, err := gr.Users().Get(ctx, id)
 		if err != nil {
 			return nil, "user not found", err
 		} else if !exists {

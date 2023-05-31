@@ -1,6 +1,7 @@
 package users_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -19,6 +20,7 @@ import (
 var _ = Describe("NATS: Users", func() {
 
 	var (
+		ctx  context.Context
 		ctrl *gomock.Controller
 
 		globalRepo *repomocks.MockGlobalRepo
@@ -29,6 +31,7 @@ var _ = Describe("NATS: Users", func() {
 	)
 
 	BeforeEach(func() {
+		ctx = context.Background()
 		ctrl = gomock.NewController(GinkgoT())
 
 		globalRepo = repomocks.NewMockGlobalRepo(ctrl)
@@ -93,7 +96,7 @@ var _ = Describe("NATS: Users", func() {
 		})
 
 		It("should successfully return a list of users", func() {
-			usersRepo.EXPECT().Find(10, 0).Return(ret, int64(len(ret)), nil).Times(1)
+			usersRepo.EXPECT().Find(ctx, 10, 0).Return(ret, int64(len(ret)), nil).Times(1)
 
 			res, err := natsReqClient.Request("users.index", []byte(`{"limit": 10, "offset": 0}`), map[string]string{
 				"token": token,
@@ -144,7 +147,7 @@ var _ = Describe("NATS: Users", func() {
 		})
 
 		It("should successfully get a user", func() {
-			usersRepo.EXPECT().Get(usr.ID).Return(usr, true, nil).Times(1)
+			usersRepo.EXPECT().Get(ctx, usr.ID).Return(usr, true, nil).Times(1)
 
 			res, err := natsReqClient.Request(fmt.Sprintf("users.get.%d", usr.ID), nil, map[string]string{
 				"token": token,

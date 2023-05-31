@@ -26,16 +26,7 @@ func main() {
 		natsPass   = os.Getenv("NATS_PLAYGROUND_NATS_PASS")
 	)
 
-	conn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?connect_timeout=180&sslmode=disable",
-		dbUser, dbPass, dbHost, dbPort, dbDatabase,
-	)
-
-	db, err := xorm.NewEngine("pgx", conn)
-	if err != nil {
-		panic(err)
-	}
-
-	// Just default to localhost
+	// Defaults from docker-compose
 	if len(natsUrl) == 0 {
 		natsUrl = natspkg.DefaultURL
 	}

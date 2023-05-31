@@ -1,6 +1,8 @@
 package repos_test
 
 import (
+	"context"
+
 	. "github.com/happilymarrieddad/nats-api-playground/api/internal/repos"
 	"github.com/happilymarrieddad/nats-api-playground/api/types"
 
@@ -10,8 +12,11 @@ import (
 
 var _ = Describe("UsersRepo", func() {
 	var repo Users
+	var ctx context.Context
 
 	BeforeEach(func() {
+		ctx = context.Background()
+
 		repo = NewUsers(db)
 		Expect(repo).NotTo(BeNil())
 
@@ -27,7 +32,7 @@ var _ = Describe("UsersRepo", func() {
 				Password:  "somegarbage", // this is normally a hashed value but in a test we don't care
 			}
 
-			Expect(repo.Create(usr)).To(Succeed())
+			Expect(repo.Create(ctx, usr)).To(Succeed())
 
 			Expect(usr.ID).To(BeNumerically(">", 0))
 		})
@@ -35,19 +40,19 @@ var _ = Describe("UsersRepo", func() {
 
 	Context("Find", func() {
 		BeforeEach(func() {
-			Expect(repo.Create(&types.User{
+			Expect(repo.Create(ctx, &types.User{
 				FirstName: "Nick",
 				LastName:  "Kotenberg",
 				Email:     "nick@mail.com",
 				Password:  "somegarbage", // this is normally a hashed value but in a test we don't care
 			})).To(Succeed())
-			Expect(repo.Create(&types.User{
+			Expect(repo.Create(ctx, &types.User{
 				FirstName: "Nick 2",
 				LastName:  "Kotenberg",
 				Email:     "nick2@mail.com",
 				Password:  "somegarbage2", // this is normally a hashed value but in a test we don't care
 			})).To(Succeed())
-			Expect(repo.Create(&types.User{
+			Expect(repo.Create(ctx, &types.User{
 				FirstName: "Nick 3",
 				LastName:  "Kotenberg",
 				Email:     "nick3@mail.com",
@@ -56,7 +61,7 @@ var _ = Describe("UsersRepo", func() {
 		})
 
 		It("should successfully get all users", func() {
-			usrs, count, err := repo.Find(2, 0)
+			usrs, count, err := repo.Find(ctx, 2, 0)
 			Expect(err).To(BeNil())
 			Expect(count).To(BeNumerically("==", 3))
 			Expect(usrs).To(HaveLen(2))
@@ -72,8 +77,8 @@ var _ = Describe("UsersRepo", func() {
 				Email:     "nick@mail.com",
 				Password:  "somegarbage", // this is normally a hashed value but in a test we don't care
 			}
-			Expect(repo.Create(usr)).To(Succeed())
-			Expect(repo.Create(&types.User{
+			Expect(repo.Create(ctx, usr)).To(Succeed())
+			Expect(repo.Create(ctx, &types.User{
 				FirstName: "Nick 2",
 				LastName:  "Kotenberg",
 				Email:     "nick2@mail.com",
@@ -82,14 +87,14 @@ var _ = Describe("UsersRepo", func() {
 		})
 
 		It("should fail to find an invalid usr", func() {
-			existingUser, exists, err := repo.Get(usr.ID + 1000)
+			existingUser, exists, err := repo.Get(ctx, usr.ID+1000)
 			Expect(err).To(BeNil())
 			Expect(exists).To(BeFalse())
 			Expect(existingUser).To(BeNil())
 		})
 
 		It("should successfully find a user", func() {
-			existingUser, exists, err := repo.Get(usr.ID)
+			existingUser, exists, err := repo.Get(ctx, usr.ID)
 			Expect(err).To(BeNil())
 			Expect(exists).To(BeTrue())
 			Expect(existingUser.FirstName).To(Equal(usr.FirstName))
@@ -105,7 +110,7 @@ var _ = Describe("UsersRepo", func() {
 				Email:     "nick@mail.com",
 				Password:  "somegarbage", // this is normally a hashed value but in a test we don't care
 			}
-			Expect(repo.Create(usr)).To(Succeed())
+			Expect(repo.Create(ctx, usr)).To(Succeed())
 		})
 
 		It("should successfully update", func() {
@@ -116,7 +121,7 @@ var _ = Describe("UsersRepo", func() {
 
 			usr.FirstName = newFirstName
 
-			newUsr, err := repo.Update(types.UserUpdate{
+			newUsr, err := repo.Update(ctx, types.UserUpdate{
 				ID:        usr.ID,
 				FirstName: func(str string) *string { return &str }(newFirstName),
 			})
@@ -139,8 +144,8 @@ var _ = Describe("UsersRepo", func() {
 				Email:     "nick@mail.com",
 				Password:  "somegarbage", // this is normally a hashed value but in a test we don't care
 			}
-			Expect(repo.Create(usr)).To(Succeed())
-			Expect(repo.Create(&types.User{
+			Expect(repo.Create(ctx, usr)).To(Succeed())
+			Expect(repo.Create(ctx, &types.User{
 				FirstName: "Nick 2",
 				LastName:  "Kotenberg",
 				Email:     "nick2@mail.com",
@@ -149,14 +154,14 @@ var _ = Describe("UsersRepo", func() {
 		})
 
 		It("should successfully delete the user", func() {
-			usrs, count, err := repo.Find(10, 0)
+			usrs, count, err := repo.Find(ctx, 10, 0)
 			Expect(err).To(BeNil())
 			Expect(count).To(BeNumerically("==", 2))
 			Expect(usrs).To(HaveLen(2))
 
-			Expect(repo.Delete(usr.ID)).To(Succeed())
+			Expect(repo.Delete(ctx, usr.ID)).To(Succeed())
 
-			usrs, count, err = repo.Find(10, 0)
+			usrs, count, err = repo.Find(ctx, 10, 0)
 			Expect(err).To(BeNil())
 			Expect(count).To(BeNumerically("==", 1))
 			Expect(usrs).To(HaveLen(1))
