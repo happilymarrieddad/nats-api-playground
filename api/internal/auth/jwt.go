@@ -3,12 +3,14 @@ package auth
 import (
 	"crypto/rsa"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"runtime"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/happilymarrieddad/nats-api-playground/api/types"
 )
 
 const (
@@ -61,7 +63,39 @@ func CreateToken(keys map[string]interface{}) (string, error) {
 	return token.SignedString(signKey)
 }
 
-func IsTokenValid(val string) (int64, error) {
+func GetUserFromToken(val string) (usr *types.User, err error) {
+	token, err := jwt.Parse(val, func(token *jwt.Token) (interface{}, error) {
+		return verifyKey, nil
+	})
+
+	switch err.(type) {
+	case nil:
+		if !token.Valid {
+			return nil, errors.New("token is invalid")
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return nil, errors.New("token is invalid")
+		}
+
+		rawUsr, exists := claims["user"]
+		if !exists {
+			return nil, errors.New("user does not exist on token 1")
+		}
+
+		usrMp, ok := rawUsr.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("user does not exist on token 2")
+		}
+
+		return types.GetUserFromMap(usrMp), nil
+	default:
+		return nil, errors.New("invalid token")
+	}
+}
+
+func IsTokenValid(val string) error {
 	token, err := jwt.Parse(val, func(token *jwt.Token) (interface{}, error) {
 		return verifyKey, nil
 	})
@@ -69,30 +103,23 @@ func IsTokenValid(val string) (int64, error) {
 	switch e := err.(type) {
 	case nil:
 		if !token.Valid {
-			return 0, errors.New("token is invalid")
+			return errors.New("token is invalid")
 		}
 
-		var user_id int64
-
-		claims, ok := token.Claims.(jwt.MapClaims)
+		_, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			return 0, errors.New("token is invalid")
+			return errors.New("token is invalid")
 		}
 
-		userID, exists := claims["id"]
-		if exists {
-			user_id = int64(userID.(float64))
-		}
-
-		return user_id, nil
+		return nil
 	case *jwt.ValidationError:
 		switch e.Errors {
 		case jwt.ValidationErrorExpired:
-			return 0, errors.New("token Expired, get a new one")
+			return errors.New("token Expired, get a new one")
 		default:
-			return 0, errors.New("error while Parsing Token")
+			return fmt.Errorf("error while Parsing Token err: %s", e.Error())
 		}
 	default:
-		return 0, errors.New("unable to parse token")
+		return errors.New("unable to parse token")
 	}
 }

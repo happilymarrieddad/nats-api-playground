@@ -21,15 +21,15 @@ var _ = Describe("nats client", func() {
 	BeforeEach(func() {
 		var err error
 
-		client1, err = NewClient(nats.DefaultURL)
+		client1, err = NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
 		Expect(client1).NotTo(BeNil())
 
-		client2, err = NewClient(nats.DefaultURL)
+		client2, err = NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
 		Expect(client2).NotTo(BeNil())
 
-		client3, err = NewClient(nats.DefaultURL)
+		client3, err = NewClient(nats.DefaultURL, "usr", "pass")
 		Expect(err).To(BeNil())
 		Expect(client3).NotTo(BeNil())
 	})
@@ -41,21 +41,21 @@ var _ = Describe("nats client", func() {
 
 			var handles int
 
-			_, err := client1.HandleRequest(ch, "api", func(m *nats.Msg) {
+			_, err := client1.HandleRequest(ch, "api", func(m *nats.Msg) ([]byte, string, error) {
 				handles++
-				client1.Respond(m.Reply, data)
+				return data, "", nil
 			})
 			Expect(err).To(BeNil())
 
-			_, err = client2.HandleRequest(ch, "api", func(m *nats.Msg) {
+			_, err = client2.HandleRequest(ch, "api", func(m *nats.Msg) ([]byte, string, error) {
 				handles++
-				client2.Respond(m.Reply, data)
+				return data, "", nil
 			})
 			Expect(err).To(BeNil())
 
 			time.Sleep(time.Second) // simulate normal delay
 
-			res, err := client3.Request(ch, nil)
+			res, err := client3.Request(ch, nil, nil)
 			Expect(err).To(BeNil())
 			Expect(res).To(Equal(data))
 
