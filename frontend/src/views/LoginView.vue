@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { defineComponent, ref } from 'vue';
-	// import { useStore } from 'vuex';
+	//import { useStore } from 'vuex';
 	import { useRouter } from 'vue-router';
+    import { useAuthStore } from '@/stores/auth'
 
 	export default defineComponent({
 		setup() {
 			// const store = useStore();
+            const auth = useAuthStore();
 			const router = useRouter();
 
 			const email = ref('');
@@ -15,17 +17,9 @@
 			const loginFn = () => {
 				errMsg.value = '';
 
+                auth.login(email.value, password.value);
+
                 router.push({ name: 'home' });
-				// store
-				// 	.dispatch('login', {
-				// 		email: email.value,
-				// 		password: password.value,
-				// 	})
-				// 	.then(() => {
-				// 		console.log('after dispatch');
-				// 		router.push({ name: 'home' });
-				// 	})
-				// 	.catch((err) => (errMsg.value = err));
 			};
 
 			return {
